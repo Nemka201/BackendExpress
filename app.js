@@ -82,7 +82,6 @@ app.post('/Api/Login', async (req, res) => {
         gender: user.gender
       };
       res.json(userData);
-      res.status(200).json({ message: 'Credenciales válidas' });
     } else {
       // Usuario o contraseña incorrectos, enviar una respuesta de error
       res.status(401).json({ message: 'Credenciales inválidas' });
@@ -98,17 +97,6 @@ app.post('/Api/Login', async (req, res) => {
 app.use(function(req, res, next) {
   next(createError(404));
 });
-
-
-
-
-
-
-// Endpoints
-
-app.post('/Api/Register', (req, res) => res.send('Usuario creado correctamente'));
-app.post('/Api/Login', (req, res) => res.send('Iniciando sesion'));
-
 
 // error handler
 app.use(function(err, req, res, next) {
