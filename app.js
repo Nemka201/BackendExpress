@@ -70,7 +70,7 @@ app.post('/Api/Login', async (req, res) => {
       'SELECT * FROM users WHERE username = ? AND password = ?',
       [username, Sha256(password)]
     );
-
+      
     // Verificar si se encontró un usuario con los datos proporcionados
     if (rows.length > 0) {
       // Usuario y contraseña válidos, enviar los datos del usuario como respuesta
