@@ -1,0 +1,90 @@
+const pool = require('./db.js');
+
+// Register API
+const Register= async (req, res) => {
+  try {
+    // Obtén los datos del usuario desde el cuerpo de la solicitud
+    const { username, password, name, year, gender } = req.body;
+    // Declaro el Query
+    const sql = 'INSERT INTO users (username, password, name, year, gender) VALUES (?, ?, ?, ?, ?)';
+    // Inserto los valores y Hasheo el password
+    const values = [username, Sha256(password), name, year, gender];
+    await pool.query(sql,values, (error,result) =>{
+    if (error) {
+      console.error('Error en la consulta SQL:', error);
+      res.status(500).json({ message: 'Error en el registro' });
+      return;
+    }});
+    const responseObj = {
+      user: {
+        username,
+        name,
+        year,
+        gender
+      }, message: 'Registro exitoso'
+    };
+    res.json(responseObj);
+
+  } catch (error) {
+    console.error('Error en el registro:', error);
+    res.status(500).json({ message: 'Error en el registro' });
+  }
+}
+// Login API
+const Login = async (req, res) => {
+
+  const { username, password } = req.body;
+  try {
+    // Consultar el usuario y contraseña en la tabla
+    const [rows] = await pool.query(
+      'SELECT * FROM users WHERE username = ? AND password = ?',
+      [username, Sha256(password)]
+    );
+      
+    // Verificar si se encontró un usuario con los datos proporcionados
+    if (rows.length > 0) {
+      // Usuario y contraseña válidos, enviar los datos del usuario como respuesta
+      const user = rows[0];
+      const userData = {
+        username: user.username,
+        name: user.name,
+        year: user.year,
+        gender: user.gender
+      };
+      res.json(userData);
+    } else {
+      // Usuario o contraseña incorrectos, enviar una respuesta de error
+      res.status(401).json({ message: 'Credenciales inválidas' });
+    }
+  } catch (error) {
+    // Error al ejecutar la consulta SQL, enviar una respuesta de error
+    console.error('Error en la consulta SQL:', error);
+    res.status(500).json({ message: 'Error en el servidor' });
+  }
+}
+// GetUserById Api
+const GetUserById = async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const sql = 'SELECT * FROM users WHERE id = ?';
+      const values = [userId];
+      const result = await pool.query(sql, values);
+  
+      // Comprueba si se encontró un usuario con el ID dado
+      if (result.length === 0) {
+        res.status(404).json({ message: 'Usuario no encontrado' });
+        return;
+      }
+      // El usuario se encontró, envíalo como respuesta
+      const user = result[0];
+      res.json(user);
+    } catch (error) {
+      console.error('Error al obtener el usuario:', error);
+      res.status(500).json({ message: 'Error al obtener el usuario' });
+    }
+  }
+module.exports = {
+    Register,
+    Login,
+    GetUserById
+};
